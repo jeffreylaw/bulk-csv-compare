@@ -84,8 +84,6 @@ if __name__ == '__main__':
             elif csv_files[i] == 1:
                 results[filename] = "Missing second file"
 
-    # print(json.dumps(results, indent=4, default=str))
-
     print('\n\n')
     print('RESULTS'.center(50))
     print('#' * 50)
