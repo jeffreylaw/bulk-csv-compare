@@ -31,8 +31,8 @@ def compare_files(file1, file2):
                 participants = next(reader2)[0].split()[1].split(';')[:-1]
                 participants = [i.split('@')[0] for i in participants]
                 file2_participants = file2_participants + participants
-
                 continue
+
             next(reader1)
             next(reader2)
 
@@ -86,8 +86,8 @@ def compare_files(file1, file2):
                 print('Error: Missing messages')
                 print(
                     f"\nError: Chat histories don't match. See row {i+7} in the Excel file.")
-
                 result_dict = {filename: 'Fail'}
+
     return result_dict
 
 
@@ -149,9 +149,10 @@ if __name__ == '__main__':
         print(key.ljust(30) + '|' + value)
     print('#' * 50)
 
-    with open('results.csv', 'w') as file:
+    with open('results.csv', 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(['Filename', 'Chat history sync'])
+        writer.writerow([])
         for key, value in results.items():
             writer.writerow([key, value])
 
