@@ -11,12 +11,38 @@ def compare_files(file1, file2):
         reader1 = csv.reader(file1)
         reader2 = csv.reader(file2)
 
+        file1_participants = ['Me']
+        file2_participants = ['Me']
+
         for i in range(7):
+            if i == 1:
+                downloader_participant = next(reader1)[0].split(': ')[1].split('@')[0]
+                file1_participants.append(downloader_participant)
+
+                downloader_participant = next(reader2)[0].split(': ')[1].split('@')[0]
+                file2_participants.append(downloader_participant)
+                continue
+
+            if i == 3:
+                participants = next(reader1)[0].split()[1].split(';')[:-1]
+                participants = [i.split('@')[0] for i in participants]
+                file1_participants = file1_participants + participants
+
+                participants = next(reader2)[0].split()[1].split(';')[:-1]
+                participants = [i.split('@')[0] for i in participants]
+                file2_participants = file2_participants + participants
+
+                continue
             next(reader1)
             next(reader2)
 
+
         file1_chat = {}
         file2_chat = {}
+
+        # Looking at output
+        # print(file1.readlines())
+        # print(file2.readlines())
 
         message_num = 1
         for row in reader1:
@@ -27,6 +53,13 @@ def compare_files(file1, file2):
         for row in reader2:
             file2_chat[message_num] = ''.join(row)
             message_num += 1
+
+        # Looking at output
+        # print(file1_chat)
+        # print(file2_chat)
+        # print(json.dumps(file1_chat, indent=4, sort_keys=True))
+        # print(json.dumps(file2_chat, indent=4, sort_keys=True))
+
 
         result_dict = {filename: 'Pass'}
 
@@ -79,6 +112,7 @@ if __name__ == '__main__':
 
         before_path = os.getcwd() + '\\before'
         for root, dirs, files in os.walk(before_path):
+            dirs.clear()
             for file in files:
                 if file.endswith(".csv"):
                     if file in csv_files.keys():
@@ -88,6 +122,7 @@ if __name__ == '__main__':
 
         after_path = os.getcwd() + '\\after'
         for root, dirs, files in os.walk(after_path):
+            dirs.clear()
             for file in files:
                 if file.endswith('.csv'):
                     if file in csv_files.keys():
@@ -113,3 +148,10 @@ if __name__ == '__main__':
     for key, value in results.items():
         print(key.ljust(30) + '|' + value)
     print('#' * 50)
+
+    with open('results.csv', 'w') as file:
+        writer = csv.writer(file)
+        writer.writerow(['Filename', 'Chat history sync'])
+        for key, value in results.items():
+            writer.writerow([key, value])
+
