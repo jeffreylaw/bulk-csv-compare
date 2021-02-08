@@ -4,12 +4,12 @@ import os
 import glob
 import json
 import re
+import platform
 
 def get_value(dic,value):
     for i in dic:
         if dic[i] == value:
             return i
-import platform
 
 def compare_files(file1, file2):
     filename = os.path.basename(file1).split('-')[0]
@@ -65,10 +65,6 @@ def compare_files(file1, file2):
                 else:
                     file1_chat[message_num-1] = file1_chat[message_num-1] + current_line
 
-        # print(json.dumps(file1_chat, indent=4, sort_keys=True))
-        # print(json.dumps(file2_chat, indent=4, sort_keys=True))
-
-
         message_num = 1
         for i, l, in enumerate(reader2, start=1):
             current_line = ''.join(l)
@@ -81,21 +77,7 @@ def compare_files(file1, file2):
                 else:
                     file2_chat[message_num-1] = file2_chat[message_num-1] + current_line
 
-        
-        # message_num = 1
-        # for row in reader1:
-        #     print(row)
-        #     file1_chat[message_num] = ''.join(row)
-        #     message_num += 1
-
-        # message_num = 1
-        # for row in reader2:
-        #     file2_chat[message_num] = ''.join(row)
-        #     message_num += 1
-
         result_dict = {filename: 'Pass'}
-
-        # missing_chat = {}
 
         for i in file2_chat.values():
             if i in file1_chat.values():
@@ -108,32 +90,6 @@ def compare_files(file1, file2):
             print('Missing messages from \\after\\' + filename)
             print(json.dumps(file1_chat, indent=4, sort_keys=True)) 
             print('-' * 50)
-
-        # for i in file1_chat:
-        #     try:
-        #         if (file1_chat[i] != file2_chat[i]):
-        #             print('\n')
-        #             print(filename)
-        #             print('EXPECTED MESSAGE'.center(80, '-'))
-        #             print(file1_chat[i])
-        #             print('FOUND MESSAGE'.center(80, '-'))
-        #             print(file2_chat[i])
-        #             print('-' * 80)
-        #             print(
-        #                 f"\nError: Chat histories don't match. See row {i+7} in the Excel file.")
-        #             result_dict = {filename: 'Fail'}
-        #             break
-        #     except Exception:
-        #         print('\n')
-        #         print(filename)
-        #         print('EXPECTED MESSAGE'.center(80, '-'))
-        #         print(file1_chat[i])
-        #         print('-' * 80)
-        #         print('Error: Missing messages')
-        #         print(
-        #             f"\nError: Chat histories don't match. See row {i+7} in the Excel file.")
-        #         result_dict = {filename: 'Fail'}
-
     return result_dict
 
 
@@ -158,8 +114,10 @@ if __name__ == '__main__':
 
         if platform.system() == 'Darwin':
             before_path = os.getcwd() + '/before'
+            after_path = os.getcwd() + '/after'
         else:
             before_path = os.getcwd() + '\\before'
+            after_path = os.getcwd() + '\\after'
 
         for root, dirs, files in os.walk(before_path):
             dirs.clear()
@@ -169,11 +127,6 @@ if __name__ == '__main__':
                         csv_files[file] = csv_files[file] + 1
                     else:
                         csv_files[file] = 1
-
-        if platform.system() == 'Darwin':
-            after_path = os.getcwd() + '/after'
-        else:
-            after_path = os.getcwd() + '\\after'
 
         for root, dirs, files in os.walk(after_path):
             dirs.clear()
