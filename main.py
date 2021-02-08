@@ -3,6 +3,7 @@ import sys
 import os
 import glob
 import json
+import re
 
 
 def compare_files(file1, file2):
@@ -40,49 +41,85 @@ def compare_files(file1, file2):
         file1_chat = {}
         file2_chat = {}
 
-        message_num = 1
-        for row in reader1:
-            file1_chat[message_num] = ''.join(row)
-            message_num += 1
+        participants_regex = [ '^' + i + r'\d{4}-\d{2}-\d{2}' for i in file1_participants]
+        combined = "(" + ")|(".join(participants_regex) + ")"
+
+        # if re.match(combined, test):
+        #     print("Some regex matched!")
+        # else:
+        #     print('no match')
 
         message_num = 1
-        for row in reader2:
-            file2_chat[message_num] = ''.join(row)
-            message_num += 1
+        for i, l, in enumerate(reader1, start=1):
+            current_line = ''.join(l)
+            if re.match(combined, current_line):
+                file1_chat[message_num] = current_line
+                message_num += 1
+            else:
+                if not current_line:
+                    file1_chat[message_num-1] = file1_chat[message_num-1] + '\n'
+                else:
+                    file1_chat[message_num-1] = file1_chat[message_num-1] + current_line
+
+
+
+        message_num = 1
+        for i, l, in enumerate(reader2, start=1):
+            current_line = ''.join(l)
+            if re.match(combined, current_line):
+                file2_chat[message_num] = current_line
+                message_num += 1
+            else:
+                if not current_line:
+                    file2_chat[message_num-1] = file2_chat[message_num-1] + '\n'
+                else:
+                    file2_chat[message_num-1] = file2_chat[message_num-1] + current_line
+
+
+        # message_num = 1
+        # for row in reader1:
+        #     print(row)
+        #     file1_chat[message_num] = ''.join(row)
+        #     message_num += 1
+
+        # message_num = 1
+        # for row in reader2:
+        #     file2_chat[message_num] = ''.join(row)
+        #     message_num += 1
 
         # Looking at output
         # print(file1_chat)
         # print(file2_chat)
-        # print(json.dumps(file1_chat, indent=4, sort_keys=True))
-        # print(json.dumps(file2_chat, indent=4, sort_keys=True))
+        print(json.dumps(file1_chat, indent=4, sort_keys=True))
+        print(json.dumps(file2_chat, indent=4, sort_keys=True))
 
 
         result_dict = {filename: 'Pass'}
 
-        for i in file1_chat:
-            try:
-                if (file1_chat[i] != file2_chat[i]):
-                    print('\n')
-                    print(filename)
-                    print('EXPECTED MESSAGE'.center(80, '-'))
-                    print(file1_chat[i])
-                    print('FOUND MESSAGE'.center(80, '-'))
-                    print(file2_chat[i])
-                    print('-' * 80)
-                    print(
-                        f"\nError: Chat histories don't match. See row {i+7} in the Excel file.")
-                    result_dict = {filename: 'Fail'}
-                    break
-            except Exception:
-                print('\n')
-                print(filename)
-                print('EXPECTED MESSAGE'.center(80, '-'))
-                print(file1_chat[i])
-                print('-' * 80)
-                print('Error: Missing messages')
-                print(
-                    f"\nError: Chat histories don't match. See row {i+7} in the Excel file.")
-                result_dict = {filename: 'Fail'}
+        # for i in file1_chat:
+        #     try:
+        #         if (file1_chat[i] != file2_chat[i]):
+        #             print('\n')
+        #             print(filename)
+        #             print('EXPECTED MESSAGE'.center(80, '-'))
+        #             print(file1_chat[i])
+        #             print('FOUND MESSAGE'.center(80, '-'))
+        #             print(file2_chat[i])
+        #             print('-' * 80)
+        #             print(
+        #                 f"\nError: Chat histories don't match. See row {i+7} in the Excel file.")
+        #             result_dict = {filename: 'Fail'}
+        #             break
+        #     except Exception:
+        #         print('\n')
+        #         print(filename)
+        #         print('EXPECTED MESSAGE'.center(80, '-'))
+        #         print(file1_chat[i])
+        #         print('-' * 80)
+        #         print('Error: Missing messages')
+        #         print(
+        #             f"\nError: Chat histories don't match. See row {i+7} in the Excel file.")
+        #         result_dict = {filename: 'Fail'}
 
     return result_dict
 
