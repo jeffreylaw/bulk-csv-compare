@@ -40,10 +40,6 @@ def compare_files(file1, file2):
         file1_chat = {}
         file2_chat = {}
 
-        # Looking at output
-        # print(file1.readlines())
-        # print(file2.readlines())
-
         message_num = 1
         for row in reader1:
             file1_chat[message_num] = ''.join(row)
