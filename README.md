@@ -30,3 +30,9 @@ In the end your directories should look something like this.
 ## To run in Mac OS
 1. Open directory in MacOS Terminal
 2. Run ```python3 main.py```
+
+## Flat compare
+The script implementation in the **main branch** does a flat compare (checks whether two csv files are exact matches). A results.csv file is generated with the results of each chatroom passing or failing the chat history sync.
+
+## Smarter compare
+The script implementation in the **2-folder-parse branch** parses through all the lines in each csv files and creates a dict entry for each message for before and after file. Any messages missing from the /after/file.csv file is printed out onto the console. A results.csv file is generated with the results of each chatroom passing or failing the chat history sync.
