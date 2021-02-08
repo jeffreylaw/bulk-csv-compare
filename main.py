@@ -5,6 +5,10 @@ import glob
 import json
 import re
 
+def get_value(dic,value):
+    for i in dic:
+        if dic[i] == value:
+            return i
 
 def compare_files(file1, file2):
     filename = os.path.basename(file1).split('-')[0]
@@ -25,13 +29,17 @@ def compare_files(file1, file2):
                 continue
 
             if i == 3:
-                participants = next(reader1)[0].split()[1].split(';')[:-1]
-                participants = [i.split('@')[0] for i in participants]
-                file1_participants = file1_participants + participants
+                participants = next(reader1)[0]
+                if len(participants) > 20:
+                    participants = participants.split()[1].split(';')[:-1]
+                    participants = [i.split('@')[0] for i in participants]
+                    file1_participants = file1_participants + participants
 
-                participants = next(reader2)[0].split()[1].split(';')[:-1]
-                participants = [i.split('@')[0] for i in participants]
-                file2_participants = file2_participants + participants
+                participants = next(reader2)[0]
+                if len(participants) > 20:
+                    participants = participants.split()[1].split(';')[:-1] 
+                    participants = [i.split('@')[0] for i in participants]
+                    file2_participants = file2_participants + participants
                 continue
 
             next(reader1)
@@ -44,11 +52,6 @@ def compare_files(file1, file2):
         participants_regex = [ '^' + i + r'\d{4}-\d{2}-\d{2}' for i in file1_participants]
         combined = "(" + ")|(".join(participants_regex) + ")"
 
-        # if re.match(combined, test):
-        #     print("Some regex matched!")
-        # else:
-        #     print('no match')
-
         message_num = 1
         for i, l, in enumerate(reader1, start=1):
             current_line = ''.join(l)
@@ -57,7 +60,7 @@ def compare_files(file1, file2):
                 message_num += 1
             else:
                 if not current_line:
-                    file1_chat[message_num-1] = file1_chat[message_num-1] + '\n'
+                    file1_chat[message_num-1] = file1_chat[message_num-1] + '\n\n'
                 else:
                     file1_chat[message_num-1] = file1_chat[message_num-1] + current_line
 
@@ -71,11 +74,11 @@ def compare_files(file1, file2):
                 message_num += 1
             else:
                 if not current_line:
-                    file2_chat[message_num-1] = file2_chat[message_num-1] + '\n'
+                    file2_chat[message_num-1] = file2_chat[message_num-1] + '\n\n'
                 else:
                     file2_chat[message_num-1] = file2_chat[message_num-1] + current_line
 
-
+        
         # message_num = 1
         # for row in reader1:
         #     print(row)
@@ -87,14 +90,21 @@ def compare_files(file1, file2):
         #     file2_chat[message_num] = ''.join(row)
         #     message_num += 1
 
-        # Looking at output
-        # print(file1_chat)
-        # print(file2_chat)
-        print(json.dumps(file1_chat, indent=4, sort_keys=True))
-        print(json.dumps(file2_chat, indent=4, sort_keys=True))
-
-
         result_dict = {filename: 'Pass'}
+
+        # missing_chat = {}
+
+        for i in file2_chat.values():
+            if i in file1_chat.values():
+                key = get_value(file1_chat, i)
+                del file1_chat[key]
+
+        if len(file1_chat) > 0:
+            result_dict = {filename: 'Fail'}
+            print('-' * 50)
+            print('Missing messages from \\after\\' + filename)
+            print(json.dumps(file1_chat, indent=4, sort_keys=True)) 
+            print('-' * 50)
 
         # for i in file1_chat:
         #     try:
