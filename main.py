@@ -3,7 +3,7 @@ import sys
 import os
 import glob
 import json
-
+import platform
 
 def compare_files(file1, file2):
     filename = os.path.basename(file1).split('-')[0]
@@ -24,13 +24,17 @@ def compare_files(file1, file2):
                 continue
 
             if i == 3:
-                participants = next(reader1)[0].split()[1].split(';')[:-1]
-                participants = [i.split('@')[0] for i in participants]
-                file1_participants = file1_participants + participants
+                participants = next(reader1)[0]
+                if len(participants) > 20:
+                    participants = participants.split()[1].split(';')[:-1]
+                    participants = [i.split('@')[0] for i in participants]
+                    file1_participants = file1_participants + participants
 
-                participants = next(reader2)[0].split()[1].split(';')[:-1]
-                participants = [i.split('@')[0] for i in participants]
-                file2_participants = file2_participants + participants
+                participants = next(reader2)[0]
+                if len(participants) > 20:
+                    participants = participants.split()[1].split(';')[:-1]
+                    participants = [i.split('@')[0] for i in participants]
+                    file2_participants = file2_participants + participants
                 continue
 
             next(reader1)
@@ -50,9 +54,6 @@ def compare_files(file1, file2):
             file2_chat[message_num] = ''.join(row)
             message_num += 1
 
-        # Looking at output
-        # print(file1_chat)
-        # print(file2_chat)
         # print(json.dumps(file1_chat, indent=4, sort_keys=True))
         # print(json.dumps(file2_chat, indent=4, sort_keys=True))
 
@@ -106,7 +107,11 @@ if __name__ == '__main__':
 
         csv_files = {}
 
-        before_path = os.getcwd() + '\\before'
+        if platform.system() == 'Darwin':
+            before_path = os.getcwd() + '/before'
+        else:
+            before_path = os.getcwd() + '\\before'
+
         for root, dirs, files in os.walk(before_path):
             dirs.clear()
             for file in files:
@@ -116,7 +121,11 @@ if __name__ == '__main__':
                     else:
                         csv_files[file] = 1
 
-        after_path = os.getcwd() + '\\after'
+        if platform.system() == 'Darwin':
+            after_path = os.getcwd() + '/after'
+        else:
+            after_path = os.getcwd() + '\\after'
+
         for root, dirs, files in os.walk(after_path):
             dirs.clear()
             for file in files:
@@ -128,8 +137,12 @@ if __name__ == '__main__':
 
         for i in csv_files:
             if csv_files[i] == 2:
-                result = compare_files(
-                    before_path + '\\' + i, after_path + '\\' + i)
+                if platform.system() == 'Darwin':
+                    result = compare_files(
+                        before_path + '/' + i, after_path + '/' + i)            
+                else:
+                    result = compare_files(
+                        before_path + '\\' + i, after_path + '\\' + i)
                 results.update(result)
             elif csv_files[i] == 1:
                 results[i] = 'Missing second file to compare with'
