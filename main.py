@@ -5,6 +5,7 @@ import glob
 import json
 import re
 import platform
+from datetime import datetime
 
 def get_value(dic,value):
     for i in dic:
@@ -160,7 +161,11 @@ if __name__ == '__main__':
         print(key.ljust(30) + '|' + value)
     print('#' * 50)
 
-    with open('results.csv', 'w', newline='') as file:
+    now = datetime.now()
+    current_time = now.strftime('%d.%b.%Y_%I.%M.%S%p')
+    print(current_time)
+
+    with open('results_' + current_time + '.csv', 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(['Filename', 'Chat history sync'])
         writer.writerow([])
