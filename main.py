@@ -118,10 +118,10 @@ if __name__ == '__main__':
     if len(sys.argv) == 1:
         if not os.path.exists('before') or not os.path.isdir('before'):
             print('Missing \'before\' directory')
-            exit(1)
+            sys.exit(1)
         if not os.path.exists('after') or not os.path.isdir('after'):
             print('Missing \'after\' directory')
-            exit(1)
+            sys.exit(1)
 
         csv_files = {}
 
