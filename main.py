@@ -116,6 +116,11 @@ def compare_files(file1, file2, wb):
 if __name__ == '__main__':
     results = {}
     if len(sys.argv) == 1:
+        if getattr(sys, 'frozen', False) and platform.system() == 'Darwin':
+            print('Frozen MacOS')
+            os.chdir(os.path.dirname(sys.executable))
+        else:
+            print('Running unfrozen')
         if not os.path.exists('before') or not os.path.isdir('before'):
             print('Missing \'before\' directory')
             sys.exit(1)
