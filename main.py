@@ -6,13 +6,18 @@ import json
 import re
 import platform
 from datetime import datetime
+import openpyxl
+from openpyxl.styles import Font
+import tkinter
+from tkinter import messagebox
 
-def get_value(dic,value):
+
+def get_key(dic,value):
     for i in dic:
         if dic[i] == value:
             return i
 
-def compare_files(file1, file2):
+def compare_files(file1, file2, wb):
     filename = os.path.basename(file1).split('-')[0]
     with open(file1, 'r', encoding='utf8') as file1, open(file2, 'r', encoding='utf8') as file2:
         reader1 = csv.reader(file1)
@@ -82,27 +87,34 @@ def compare_files(file1, file2):
 
         for i in file2_chat.values():
             if i in file1_chat.values():
-                key = get_value(file1_chat, i)
+                key = get_key(file1_chat, i)
                 del file1_chat[key]
 
         if len(file1_chat) > 0:
             result_dict = {filename: 'Fail'}
-            print('-' * 50)
-            print('Missing messages from \\after\\' + filename)
-            print(json.dumps(file1_chat, indent=4, sort_keys=True)) 
-            print('-' * 50)
+            heading_font = Font(bold=True)
+
+            ws = wb.create_sheet(title=filename)
+            ws.column_dimensions['A'].width = 20
+            ws['A1'] = 'Chatroom name:'
+            ws['B1'] = filename
+
+            ws['A3'].font = heading_font
+            ws['B3'].font = heading_font
+
+            ws['A3'] = 'Message number:'
+            ws['B3'] = 'Contents:'
+
+            current_row = 4
+            for key, value in file1_chat.items():
+                ws['A' + str(current_row)] = key
+                ws['B' + str(current_row)] = value
+                current_row += 1
     return result_dict
 
 
 if __name__ == '__main__':
     results = {}
-
-    if len(sys.argv) == 3:
-        file1 = sys.argv[1]
-        file2 = sys.argv[2]
-        result = compare_files(file1, file2)
-        results.update(result)
-
     if len(sys.argv) == 1:
         if not os.path.exists('before') or not os.path.isdir('before'):
             print('Missing \'before\' directory')
@@ -123,11 +135,8 @@ if __name__ == '__main__':
         for root, dirs, files in os.walk(before_path):
             dirs.clear()
             for file in files:
-                if file.endswith(".csv"):
-                    if file in csv_files.keys():
-                        csv_files[file] = csv_files[file] + 1
-                    else:
-                        csv_files[file] = 1
+                if file.endswith('.csv'):
+                    csv_files[file] = 1
 
         for root, dirs, files in os.walk(after_path):
             dirs.clear()
@@ -138,37 +147,52 @@ if __name__ == '__main__':
                     else:
                         csv_files[file] = 1
 
+        wb = openpyxl.Workbook()
+
+        sheet = wb.active
+        sheet.title = 'Results'
+
+
         for i in csv_files:
             if csv_files[i] == 2:
                 if platform.system() == 'Darwin':
                     result = compare_files(
-                        before_path + '/' + i, after_path + '/' + i)            
+                        before_path + '/' + i, after_path + '/' + i, wb)            
                 else:
                     result = compare_files(
-                        before_path + '\\' + i, after_path + '\\' + i)
+                        before_path + '\\' + i, after_path + '\\' + i, wb)
                 results.update(result)
             elif csv_files[i] == 1:
-                results[i] = 'Missing second file to compare with'
+                results[i] = 'Failed (Missing second file to compare with)'
             else:
-                results[i] = 'Found more than 2 copies'
+                results[i] = 'Failed (Somehow found more than 2 copies)'
 
-    print('\n\n')
-    print('RESULTS'.center(50))
-    print('#' * 50)
-    print('Filename:'.ljust(30) + '|Chat history sync:')
-    print('-' * 50)
+
+    ws = wb['Results']
+    ws.column_dimensions['A'].width = 30
+
+    pass_font = Font(color='008000')
+    fail_font = Font(color='FF0000')
+
+    current_row = 5
     for key, value in results.items():
-        print(key.ljust(30) + '|' + value)
-    print('#' * 50)
+        ws['A' + str(current_row)] = key
+        ws['B' + str(current_row)] = value
+        if value == 'Pass':
+            ws['B' + str(current_row)].font = pass_font
+        else:
+            ws['B' + str(current_row)].font = fail_font
+        current_row += 1
 
     now = datetime.now()
-    current_time = now.strftime('%d.%b.%Y_%I.%M.%S%p')
-    print(current_time)
 
-    with open('results_' + current_time + '.csv', 'w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(['Filename', 'Chat history sync'])
-        writer.writerow([])
-        for key, value in results.items():
-            writer.writerow([key, value])
+    ws['A1'] = 'Created:'
+    ws['B1'] = now.strftime('%d-%b-%Y %I:%M:%S%p')
 
+    heading_font = Font(bold=True)
+    ws['A4'].font = heading_font
+    ws['A4'] = 'Name:'
+    ws['B4'].font = heading_font
+    ws['B4'] = 'Synced:'
+    ws.freeze_panes = 'A5'
+    wb.save('results_' + now.strftime('%d.%b.%Y_%I.%M.%S%p') + '.xlsx')
