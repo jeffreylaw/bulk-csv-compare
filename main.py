@@ -18,7 +18,7 @@ def get_key(dic,value):
             return i
 
 def compare_files(file1, file2, wb):
-    filename = os.path.basename(file1).split('-')[0]
+    filename = os.path.basename(file1)
     with open(file1, 'r', encoding='utf8') as file1, open(file2, 'r', encoding='utf8') as file2:
         reader1 = csv.reader(file1)
         reader2 = csv.reader(file2)
