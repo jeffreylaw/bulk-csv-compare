@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['/Users/jeffreylaw/Documents/Tracked projects/bulk-csv-compare'],
+             pathex=['C:\\Users\\Jeffrey\\Desktop\\bulk-csv-compare'],
              binaries=[],
              datas=[],
              hiddenimports=[],
